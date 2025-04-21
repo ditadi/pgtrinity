@@ -1,0 +1,12 @@
+node_modules
+.DS_Store
+dist
+.env
+.pnpm-store
+
+# VitePress
+**/node_modules
+**/.vitepress/cache
+**/.vitepress/dist
+**/.vitepress/.temp
+
