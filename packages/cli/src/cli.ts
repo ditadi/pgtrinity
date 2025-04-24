@@ -12,6 +12,11 @@ import { validateAdapter, validateModules } from "./utils/validators.ts";
 const SUPPORTED_ADAPTERS = ["neon"];
 const VALID_MODULES = ["cache", "realtime", "queue"];
 
+/**
+ * Loads environment variables from the project's root `.env` file.
+ *
+ * Resolves the root directory relative to the current file and loads environment variables using the dotenv package.
+ */
 function loadEnv() {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = dirname(__filename);

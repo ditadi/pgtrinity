@@ -370,6 +370,14 @@ export default class NeonAdapter implements DatabaseAdapter {
     }
 }
 
+/**
+ * Creates and returns a NeonAdapter instance configured with the provided options.
+ *
+ * @param options - Partial configuration including API key, project ID, and optional force flag.
+ * @returns A configured {@link NeonAdapter} instance.
+ *
+ * @throws {Error} If {@link options.apiKey} or {@link options.projectId} is missing.
+ */
 export function createNeonAdapter(options: Partial<NeonAdapterOptions>): NeonAdapter {
     if (!options.apiKey || !options.projectId) {
         throw new Error("API Key and Project ID are required");

@@ -5,7 +5,17 @@ import type { NeonAdapterOptions } from "../adapters/neon/types.ts";
 import { errorLog, infoLog, successLog, warningLog } from "../utils/log.ts";
 
 /**
- * Handle initialization for Neon adapter
+ * Initializes the Neon adapter for PGTrinity, prompting for credentials if necessary, creating a branch, and running migrations.
+ *
+ * Prompts the user for the Neon API key and project ID if they are not provided in {@link options} or environment variables. After gathering credentials, it creates a Neon branch, runs migrations for the specified modules, and outputs the resulting connection string.
+ *
+ * @param options - Neon adapter configuration options, including credentials and branch settings.
+ * @param requestedModules - List of module names to run migrations for.
+ *
+ * @remark
+ * If required credentials are missing, the function will prompt the user interactively via the CLI.
+ *
+ * @throws {Error} If the Neon adapter fails to provide a connection string.
  */
 export async function handleNeonInit(
     options: NeonAdapterOptions,
