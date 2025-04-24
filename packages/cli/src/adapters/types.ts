@@ -3,7 +3,7 @@ import type { NeonAdapterOptions } from "./neon/types.ts";
  * Common interface for all database adapters
  */
 export interface DatabaseAdapter {
-    run(branchName: string): Promise<string>;
+    run(options?: BaseAdapterOptions): Promise<string>;
     runMigrations(connectionString: string, modules?: string[]): Promise<void>;
     runCheck(connectionString: string): Promise<DatabaseCheckResult>;
 }

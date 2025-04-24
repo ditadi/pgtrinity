@@ -28,7 +28,8 @@ export default class NeonAdapter implements DatabaseAdapter {
     /**
      * Run the main logic of the adapter
      */
-    async run(branchName: string): Promise<string> {
+    async run(options: NeonAdapterOptions): Promise<string> {
+        const branchName = options.branchName as string;
         const branchResult = await this.checkExistingBranch(branchName);
 
         if (!branchResult.success || !branchResult.data) {
@@ -63,7 +64,7 @@ export default class NeonAdapter implements DatabaseAdapter {
         return connResult.data;
     }
 
-    async runMigrations(connectionString: string, modules?: string[]): Promise<void> {}
+    async runMigrations(connectionString: string, modules?: string[]): Promise<void> { }
 
     async runCheck(connectionString: string): Promise<DatabaseCheckResult> {
         return {} as DatabaseCheckResult;
@@ -346,7 +347,7 @@ export default class NeonAdapter implements DatabaseAdapter {
                 };
             }
 
-            const data = await response.json();
+            const data = (await response.json()) as T;
 
             return { success: true, data };
         } catch (err) {

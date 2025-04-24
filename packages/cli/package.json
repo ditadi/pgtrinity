@@ -3,11 +3,12 @@
     "private": true,
     "version": "0.1.0",
     "description": "CLI for PGTrinity configuration",
-    "main": "index.js",
+    "main": "dist/cli.js",
     "type": "module",
     "bin": {
         "pgtrinity": "dist/cli.js"
     },
+    "files": ["dist"],
     "scripts": {
         "build": "tsup src/cli.ts --format esm --dts --shims",
         "dev": "tsup src/cli.ts --format esm --watch",
@@ -30,5 +31,9 @@
         "inquirer": "^12.5.2",
         "ora": "^8.2.0",
         "postgres": "^3.4.5"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ditadi/pgtrinity.git"
     }
 }

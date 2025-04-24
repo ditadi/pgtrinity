@@ -24,7 +24,12 @@ export function validateModules(
     modulesInput: string,
     validModules: string[],
     spinner: Ora,
-): string[] {
+): { valid: boolean; modules: string[] } {
+    if (!modulesInput.trim()) {
+        spinner.fail("No modules requested.");
+        errorLog(`Valid modules: ${validModules.join(", ")}`);
+        return { valid: false, modules: [] };
+    }
     const requestedModules = modulesInput.split(",").map((m) => m.trim().toLowerCase());
 
     const invalidModules = requestedModules.filter((m) => !validModules.includes(m));
@@ -32,8 +37,8 @@ export function validateModules(
     if (invalidModules.length > 0) {
         spinner.fail(`Invalid modules: ${invalidModules.join(", ")}`);
         errorLog(`Valid modules: ${validModules.join(", ")}`);
-        return [];
+        return { valid: false, modules: [] };
     }
 
-    return requestedModules;
+    return { valid: true, modules: requestedModules };
 }

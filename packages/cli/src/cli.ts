@@ -39,10 +39,9 @@ program
     .option(
         "-b, --branch-name <n>",
         "Branch name for PGTrinity (only for neon adapter)",
-        "pgtrinity-branch",
+        "pgtrinity",
     )
     .option("-f, --force", "Force recreation of branch if it exists (only for neon adapter)")
-    .option("-c, --connection <string>", "PostgreSQL connection string (only for postgres adapter)")
     .option(
         "-m, --modules <modules>",
         "Modules to initialize (cache,realtime,queue)",
@@ -51,12 +50,25 @@ program
     .action(async (options) => {
         const spinner = ora("Initializing PGTrinity configuration...").start();
         try {
-            validateAdapter(options.adapter, SUPPORTED_ADAPTERS, spinner);
-            const requestedModules = validateModules(options.modules, VALID_MODULES, spinner);
+            if (!validateAdapter(options.adapter, SUPPORTED_ADAPTERS, spinner)) {
+                spinner.fail("Invalid adapter specified.");
+                process.exit(1);
+            }
+
+            const { valid, modules } = validateModules(options.modules, VALID_MODULES, spinner);
+
+            if (!valid) {
+                spinner.fail("Invalid modules requested.");
+                return;
+            }
 
             if (options.adapter === "neon") {
-                await handleNeonInit(options, requestedModules, spinner);
+                await handleNeonInit(options, modules, spinner);
+            } else {
+                spinner.fail(`Adapter ${options.adapter} is supported but not implemented yet`);
+                process.exit(1);
             }
+
         } catch (error) {
             spinner.fail("Failed to initialize PGTrinity configuration");
             errorLog(`\nError: ${error instanceof Error ? error.message : String(error)}`);
