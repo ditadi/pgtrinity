@@ -1,35 +1,45 @@
 import chalk from "chalk";
 
 /**
- * Log a error message
+ * Logs an error message to the console in red.
+ *
+ * @param message - The error message to display.
  */
 export function errorLog(message: string): void {
     console.log(chalk.red(message));
 }
 
 /**
- * Log a success message
+ * Logs a message to the console in green to indicate success.
+ *
+ * @param message - The message to display as a success log.
  */
 export function successLog(message: string): void {
     console.log(chalk.green(message));
 }
 
 /**
- * Log a warning message
+ * Logs a warning message to the console in yellow.
+ *
+ * @param message - The warning message to display.
  */
 export function warningLog(message: string): void {
     console.log(chalk.yellow(message));
 }
 
 /**
- * Log a info message
+ * Logs an informational message to the console in cyan color.
+ *
+ * @param message - The message to display.
  */
 export function infoLog(message: string): void {
     console.log(chalk.cyan(message));
 }
 
 /**
- * Log a plain message
+ * Logs a message to the console in cyan color without additional formatting.
+ *
+ * @param message - The message to display.
  */
 export function plainLog(message: string): void {
     console.log(chalk.cyan(message));
