@@ -1,0 +1,11 @@
+{
+    "name": "basic-cache",
+    "main": "index.ts",
+    "private": true,
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "@types/node": "latest"
+    }
+}

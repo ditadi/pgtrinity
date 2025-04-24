@@ -1,0 +1,39 @@
+{
+    "name": "@pgtrinity/cli",
+    "private": true,
+    "version": "0.1.0",
+    "description": "CLI for PGTrinity configuration",
+    "main": "dist/cli.js",
+    "type": "module",
+    "bin": {
+        "pgtrinity": "dist/cli.js"
+    },
+    "files": ["dist"],
+    "scripts": {
+        "build": "tsup src/cli.ts --format esm --dts --shims",
+        "dev": "tsup src/cli.ts --format esm --watch",
+        "lint": "tsc --noEmit",
+        "clean": "rm -rf dist"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "@types/node": "^22.14.1",
+        "chalk": "^5.4.1",
+        "ts-node": "^10.9.2",
+        "tsup": "^8.4.0",
+        "typescript": "^5.8.3"
+    },
+    "dependencies": {
+        "commander": "^13.1.0",
+        "dotenv": "^16.5.0",
+        "inquirer": "^12.5.2",
+        "ora": "^8.2.0",
+        "postgres": "^3.4.5"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ditadi/pgtrinity.git"
+    }
+}

@@ -1,18 +1,28 @@
 {
     "compilerOptions": {
-        "target": "ES2020",
+        "lib": ["ESNext"],
+        "target": "ESNext",
         "module": "ESNext",
+        "moduleDetection": "force",
+        "jsx": "react-jsx",
+        "allowJs": true,
+
         "moduleResolution": "bundler",
-        "esModuleInterop": true,
+        "allowImportingTsExtensions": true,
+        "verbatimModuleSyntax": true,
+        "noEmit": true,
+
         "strict": true,
         "skipLibCheck": true,
-        "declaration": true,
-        "resolveJsonModule": true,
-        "isolatedModules": true,
+        "noFallthroughCasesInSwitch": true,
+        "noUncheckedIndexedAccess": true,
+
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "noPropertyAccessFromIndexSignature": false,
         "baseUrl": ".",
         "paths": {
-            "@pgtrinity/*": ["packages/*/src"]
+            "@pgtrinity/*": ["packages/*"]
         }
-    },
-    "exclude": ["node_modules", "dist"]
+    }
 }

@@ -21,6 +21,7 @@
         "enabled": true,
         "rules": {
             "recommended": true
-        }
+        },
+        "ignore": ["node_modules", "**/deps/**", "**/dist/**"]
     }
 }
