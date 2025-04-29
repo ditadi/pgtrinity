@@ -3,9 +3,14 @@ import type { NeonAdapterOptions } from "./neon/types.ts";
  * Common interface for all database adapters
  */
 export interface DatabaseAdapter {
-    run(options?: BaseAdapterOptions): Promise<string>;
-    runMigrations(connectionString: string, modules?: string[]): Promise<void>;
-    runCheck(connectionString: string): Promise<DatabaseCheckResult>;
+    // run(options?: BaseAdapterOptions): Promise<string>;
+    // runCheck(connectionString: string): Promise<DatabaseCheckResult>;
+
+    createResources(): Promise<string>;
+    createMigrations(connectionString: string, modules?: string[]): Promise<Result>;
+    checkResources(): Promise<string>;
+    validateOptions(): boolean;
+    promptForMissingOptions(): Promise<void>;
 }
 
 /**

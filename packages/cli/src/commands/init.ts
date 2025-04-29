@@ -1,73 +1,62 @@
-import inquirer from "inquirer";
-import type { Ora } from "ora";
+import type { Command } from "commander";
 import { createAdapter } from "../adapters/index.ts";
-import type { NeonAdapterOptions } from "../adapters/neon/types.ts";
-import { errorLog, infoLog, successLog, warningLog } from "../utils/log.ts";
+import { SUPPORTED_ADAPTERS } from "../cli.ts";
+import { infoLog, successLog, warningLog } from "../utils/log.ts";
+import { BaseCommand, type CommandOptions } from "./base.ts";
 
-/**
- * Handle initialization for Neon adapter
- */
-export async function handleNeonInit(
-    options: NeonAdapterOptions,
-    requestedModules: string[],
-    spinner: Ora,
-) {
-    try {
-        const apiKey = options.apiKey || process.env.NEON_API_KEY;
-        const projectId = options.projectId || process.env.NEON_PROJECT_ID;
+export class InitCommand extends BaseCommand {
+    static register(program: Command): void {
+        program
+            .command("init")
+            .description("Initialize PGTrinity configuration")
+            .option(
+                "-a, --adapter <adapter>",
+                `Database adapter to use (${SUPPORTED_ADAPTERS.join(", ")})`,
+                "neon",
+            )
+            .option("-f, --force", "Force recreation if resources exist")
+            .option(
+                "-m, --modules <modules>",
+                "Modules to initialize (cache,realtime,queue)",
+                "cache,realtime,queue",
+            )
+            .option("-c, --connection <string>", "PostgreSQL connection string")
+            .option("-k, --api-key <key>", "API Key (for neon)")
+            .option("-p, --project-id <id>", "Project ID (for neon)")
+            .option("-b, --branch-name <name>", "Branch name for PGTrinity (for neon)", "pgtrinity")
+            .action((options) =>
+                new InitCommand().run(options, "Initializing PGTrinity configuration..."),
+            );
+    }
 
-        if (!apiKey || !projectId) {
-            spinner.stop();
+    protected async execute(options: CommandOptions): Promise<void> {
+        const adapter = createAdapter(options.adapter, options);
 
-            const answers = await inquirer.prompt([
-                {
-                    type: "input",
-                    name: "apiKey",
-                    message: "Enter your Neon API Key:",
-                    when: !apiKey,
-                    validate: (input) => (input ? true : "API Key is required"),
-                },
-                {
-                    type: "input",
-                    name: "projectId",
-                    message: "Enter your Neon Project ID:",
-                    when: !projectId,
-                    validate: (input) => (input ? true : "Project ID is required"),
-                },
-            ]);
-
-            if (answers.apiKey) options.apiKey = answers.apiKey;
-            if (answers.projectId) options.projectId = answers.projectId;
-
-            spinner.start("Initializing PGTrinity configuration...");
+        if (!adapter.validateOptions()) {
+            this.spinner?.stop();
+            await adapter.promptForMissingOptions();
+            this.spinner?.start("Creating resources...");
         }
 
-        spinner.text = "Creating branch using Neon adapter...";
+        this.spinner.text = `Creating resources using ${options.adapter} adapter...`;
+        const connectionString = await adapter.createResources();
 
-        const adapterApiKey = options.apiKey || apiKey;
-        const adapterProjectId = options.projectId || projectId;
+        if (!connectionString) {
+            throw new Error("Failed to get connection string");
+        }
 
-        const adapter = createAdapter("neon", {
-            apiKey: adapterApiKey,
-            projectId: adapterProjectId,
-            branchName: options.branchName,
-            force: options.force,
-        });
+        this.spinner.text = "Running migrations...";
+        const modulesArray = options.modules.split(",");
+        const migrationResult = await adapter.createMigrations(connectionString, modulesArray);
 
-        const connectionString = await adapter.run(options);
+        if (!migrationResult.success) {
+            throw new Error(migrationResult.error?.message);
+        }
 
-        if (!connectionString) throw new Error("Failed to get connection string from adapter");
+        this.spinner.succeed("PGTrinity initialized successfully");
 
-        spinner.text = "Running migrations...";
-
-        await adapter.runMigrations(connectionString, requestedModules);
-
-        spinner.succeed("PGTrinity initialized successfully");
         successLog("\nConnection string for PGTrinity:");
         infoLog(connectionString);
         warningLog("\nAdd to your .env with the name PGTRINITY_CONNECTION_STRING");
-    } catch (error) {
-        spinner.fail("Failed to initialize PGTrinity configuration");
-        errorLog(error instanceof Error ? error.message : String(error));
     }
 }
