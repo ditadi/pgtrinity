@@ -4,9 +4,10 @@ hero:
   name: PGTrinity
   text: Cache, queue and realtime
   tagline: All you need to build a modern web application using only PostgreSQL.
+  image: /logo.svg
   actions:
     - theme: brand
-      text: In development 
+      text: In development
       link: /
     - theme: alt
       text: GitHub

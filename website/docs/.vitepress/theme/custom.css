@@ -3,11 +3,9 @@
 :root,
 .dark {
     --vp-nav-logo-height: 30px;
-
     --pgtrinity-color: #38b2ac;
     --ddn-color: #d0bcff;
     --pgtrinity-secondary-color: #2d8b87;
-
     --vp-c-brand-1: var(--pgtrinity-color);
     --vp-c-brand-2: #4fd1c5;
     --vp-c-brand-3: #2d8b87;
@@ -77,21 +75,6 @@ iframe {
     transform-origin: top left;
 }
 
-.VPHomeHero .VPImage.image-src {
-    max-width: min(calc(250px + 25vw), 560px);
-    margin-left: -40px;
-    margin-top: 10px;
-}
-@media (max-width: 959px) {
-    .VPHomeHero .image .image-container {
-        height: calc(190px + 15vw) !important;
-        margin-top: -20px;
-    }
-    .VPHomeHero .VPImage.image-src {
-        margin-left: 0px;
-    }
-}
-
 .VPFeatures {
     padding-top: 15px !important;
     padding-bottom: 45px;
@@ -145,7 +128,7 @@ iframe {
         padding: 0 15px;
         line-height: 30px;
         font-size: 14.5px;
-        color: #ffffff !important; /* Texto branco */
+        color: #ffffff !important;
         border-color: var(--pgtrinity-secondary-color);
         background-color: var(--pgtrinity-color);
         transition: color 0.25s, border-color 0.25s, background-color 0.25s;
@@ -158,4 +141,64 @@ iframe {
 
 .VPNavBarAppearance {
     visibility: hidden;
+}
+
+.VPHomeHero .image .image-container,
+.VPHomeHero .image [class*="image-container"],
+.VPHomeHero .image-container {
+    height: auto !important;
+    min-height: 450px !important;
+}
+
+.VPHomeHero .image-src,
+.VPHomeHero .VPImage.image-src,
+.VPHomeHero [class*="image-src"],
+[data-v-6461ddc5] .image-src,
+.VPHomeHero img {
+    position: absolute !important;
+    max-width: 500px !important;
+    max-height: 500px !important;
+    width: 500px !important;
+    height: auto !important;
+    top: 35% !important;
+    left: 65% !important;
+    transform: translate(-50%, -50%) !important;
+}
+
+@media (max-width: 959px) {
+    .VPHomeHero .image .image-container,
+    .VPHomeHero .image [class*="image-container"],
+    .VPHomeHero .image-container {
+        min-height: 350px !important;
+    }
+
+    .VPHomeHero .image-src,
+    .VPHomeHero .VPImage.image-src,
+    .VPHomeHero [class*="image-src"],
+    [data-v-6461ddc5] .image-src,
+    .VPHomeHero img {
+        max-width: 350px !important;
+        max-height: 350px !important;
+        width: 350px !important;
+        top: 50% !important;
+        left: 50% !important;
+    }
+}
+
+@media (max-width: 639px) {
+    .VPHomeHero .image .image-container,
+    .VPHomeHero .image [class*="image-container"],
+    .VPHomeHero .image-container {
+        min-height: 250px !important;
+    }
+
+    .VPHomeHero .image-src,
+    .VPHomeHero .VPImage.image-src,
+    .VPHomeHero [class*="image-src"],
+    [data-v-6461ddc5] .image-src,
+    .VPHomeHero img {
+        max-width: 250px !important;
+        max-height: 250px !important;
+        width: 250px !important;
+    }
 }
