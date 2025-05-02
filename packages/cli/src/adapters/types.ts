@@ -1,12 +1,4 @@
 import type { NeonAdapterOptions } from "./neon/types.ts";
-/**
- * Common interface for all database adapters
- */
-export interface DatabaseAdapter {
-    run(options?: BaseAdapterOptions): Promise<string>;
-    runMigrations(connectionString: string, modules?: string[]): Promise<void>;
-    runCheck(connectionString: string): Promise<DatabaseCheckResult>;
-}
 
 /**
  * Result of database check operation
@@ -25,7 +17,7 @@ export interface DatabaseCheckResult {
 export type AdapterType = "neon";
 
 export interface BaseAdapterOptions {
-    connectionString: string;
+    connectionString?: string;
 }
 
 export type AdapterOptions = NeonAdapterOptions;

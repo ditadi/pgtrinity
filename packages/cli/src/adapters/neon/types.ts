@@ -4,9 +4,9 @@ import type { BaseAdapterOptions } from "../types.ts";
  * Neon Adapter Configuration
  */
 export interface NeonAdapterOptions extends BaseAdapterOptions {
-    apiKey: string;
-    projectId: string;
-    branchName: string;
+    apiKey?: string;
+    projectId?: string;
+    branchName?: string;
     force?: boolean;
 }
 

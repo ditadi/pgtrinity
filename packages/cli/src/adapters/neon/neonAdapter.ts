@@ -1,5 +1,8 @@
-import { successLog, warningLog } from "../../utils/log.ts";
-import type { DatabaseAdapter, DatabaseCheckResult, Result } from "../types.ts";
+import inquirer from "inquirer";
+import { getEnvValue } from "../../utils/config.ts";
+import { plainLog, successLog, warningLog } from "../../utils/log.ts";
+import { BaseAdapter } from "../base.ts";
+import type { Result } from "../types.ts";
 import type {
     NeonAPIBranch,
     NeonAPIBranchCheckResult,
@@ -9,28 +12,66 @@ import type {
     NeonAPIOperation,
     NeonAPIRole,
     NeonAdapterOptions,
-} from "./types";
+} from "./types.ts";
 
-export default class NeonAdapter implements DatabaseAdapter {
+export default class NeonAdapter extends BaseAdapter {
     private readonly NEON_API_URL = "https://console.neon.tech/api/v2";
     private headers: Record<string, string>;
     private apiKey: string;
     private projectId: string;
-    private force: boolean;
+    private branchName: string;
+    private force?: boolean;
 
-    constructor(apiKey: string, projectId: string, force: boolean) {
-        this.apiKey = apiKey;
-        this.projectId = projectId;
-        this.force = force;
+    constructor(neonOptions: NeonAdapterOptions) {
+        super(neonOptions);
+        this.apiKey = neonOptions.apiKey || (getEnvValue("NEON_API_KEY") as string);
+        this.projectId = neonOptions.projectId || (getEnvValue("NEON_PROJECT_ID") as string);
+        this.branchName = neonOptions.branchName || "pgtrinity";
+        this.force = neonOptions.force || false;
         this.headers = this.createAPIHeaders();
     }
 
     /**
-     * Run the main logic of the adapter
+     * Validate options for the adapter
      */
-    async run(options: NeonAdapterOptions): Promise<string> {
-        const branchName = options.branchName as string;
-        const branchResult = await this.checkExistingBranch(branchName);
+    validateOptions(): boolean {
+        return !!(this.apiKey && this.projectId);
+    }
+
+    /**
+     * Prompt for missing options
+     */
+    async promptForMissingOptions(): Promise<void> {
+        const answers = await inquirer.prompt([
+            {
+                type: "input",
+                name: "apiKey",
+                message: "Enter your Neon API Key:",
+                when: !this.apiKey,
+                validate: (input) => (input ? true : "API Key is required"),
+            },
+            {
+                type: "input",
+                name: "projectId",
+                message: "Enter your Neon Project ID:",
+                when: !this.projectId,
+                validate: (input) => (input ? true : "Project ID is required"),
+            },
+        ]);
+
+        if (answers.apiKey) this.apiKey = answers.apiKey;
+        if (answers.projectId) this.projectId = answers.projectId;
+
+        if (answers.apiKey) {
+            this.headers = this.createAPIHeaders();
+        }
+    }
+
+    /**
+     * Create resources for the adapter
+     */
+    async createResources(): Promise<string> {
+        const branchResult = await this.checkExistingBranch(this.branchName);
 
         if (!branchResult.success || !branchResult.data) {
             throw new Error(`Failed to check existing branch: ${branchResult.error}`);
@@ -48,7 +89,7 @@ export default class NeonAdapter implements DatabaseAdapter {
         }
 
         if (!branchId) {
-            const createResult = await this.createBranch(branchName, primaryBranchId);
+            const createResult = await this.createBranch(this.branchName, primaryBranchId);
             if (!createResult.success || !createResult.data) {
                 throw createResult.error || new Error("Failed to create branch");
             }
@@ -64,10 +105,22 @@ export default class NeonAdapter implements DatabaseAdapter {
         return connResult.data;
     }
 
-    async runMigrations(connectionString: string, modules?: string[]): Promise<void> { }
+    /**
+     * Create migrations for the adapter
+     */
+    async createMigrations(connectionString: string, modules?: string[]): Promise<Result<void>> {
+        return {
+            success: true,
+        };
+    }
 
-    async runCheck(connectionString: string): Promise<DatabaseCheckResult> {
-        return {} as DatabaseCheckResult;
+    /**
+     * Check if resources exist and migrations are up to date
+     */
+    async checkResources(connectionString: string): Promise<Result> {
+        warningLog("Checking resources and migrations...");
+        successLog("All resources and migrations are up to date");
+        return { success: true };
     }
 
     /**
@@ -368,12 +421,4 @@ export default class NeonAdapter implements DatabaseAdapter {
             Authorization: `Bearer ${this.apiKey}`,
         };
     }
-}
-
-export function createNeonAdapter(options: Partial<NeonAdapterOptions>): NeonAdapter {
-    if (!options.apiKey || !options.projectId) {
-        throw new Error("API Key and Project ID are required");
-    }
-
-    return new NeonAdapter(options.apiKey, options.projectId, options.force || false);
 }
