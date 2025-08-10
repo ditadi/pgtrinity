@@ -1,29 +1,9 @@
 import { describe, it, expect } from "vitest";
+import { parseAndValidateModules } from "../../utils/modules.ts";
 
 describe("InitCommand - Module Validation", () => {
 	describe("module parsing and validation", () => {
 		const VALID_MODULES = ["cache", "realtime", "queue"];
-
-		function parseAndValidateModules(modulesInput: string, validModules: string[]) {
-			const modulesArray = modulesInput
-				.split(",")
-				.map((m) => m.trim())
-				.filter(Boolean);
-
-			// Check if any modules were specified
-			if (modulesArray.length === 0) {
-				throw new Error(`No valid modules specified. Please specify at least one module: ${validModules.join(", ")}`);
-			}
-
-			// Validate each module
-			for (const module of modulesArray) {
-				if (!validModules.includes(module)) {
-					throw new Error(`Invalid module "${module}". Allowed modules: ${validModules.join(", ")}`);
-				}
-			}
-
-			return modulesArray;
-		}
 
 		it("should successfully parse valid modules", () => {
 			const result = parseAndValidateModules("cache,realtime", VALID_MODULES);

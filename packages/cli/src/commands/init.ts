@@ -2,6 +2,7 @@ import type { Command } from "commander";
 import { createAdapter } from "../adapters/index.ts";
 import { SUPPORTED_ADAPTERS, VALID_MODULES } from "../cli.ts";
 import { infoLog, successLog, warningLog } from "../utils/log.ts";
+import { parseAndValidateModules } from "../utils/modules.ts";
 import { BaseCommand, type CommandOptions } from "./base.ts";
 
 export class InitCommand extends BaseCommand {
@@ -55,23 +56,13 @@ export class InitCommand extends BaseCommand {
     const connectionString = resourceResult.data;
 
     this.spinner.text = "Running migrations...";
-    const modulesArray = options.modules
-      .split(",")
-      .map((m) => m.trim())
-      .filter(Boolean);
-
-    // Check if any modules were specified
-    if (modulesArray.length === 0) {
-      this.spinner.fail("No valid modules specified");
-      throw new Error(`Please specify at least one module: ${VALID_MODULES.join(", ")}`);
-    }
-
-    // Validate each module
-    for (const module of modulesArray) {
-      if (!VALID_MODULES.includes(module)) {
-        this.spinner.fail(`Invalid module "${module}"`);
-        throw new Error(`Allowed modules: ${VALID_MODULES.join(", ")}`);
-      }
+    
+    let modulesArray: string[];
+    try {
+      modulesArray = parseAndValidateModules(options.modules, VALID_MODULES);
+    } catch (error) {
+      this.spinner.fail(error instanceof Error ? error.message : "Module validation failed");
+      throw error;
     }
 
     const migrationResult = await adapter.createMigrations(connectionString, modulesArray);

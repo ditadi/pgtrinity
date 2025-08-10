@@ -16,6 +16,7 @@
         "dev": "tsup src/cli.ts --format esm --watch",
         "lint": "tsc --noEmit",
         "clean": "rm -rf dist",
+        "pretest": "pnpm build",
         "test": "vitest",
         "test:run": "vitest run",
         "test:watch": "vitest watch"
@@ -26,13 +27,13 @@
     "devDependencies": {
         "@types/node": "^22.14.1",
         "@vitest/ui": "^3.2.4",
-        "chalk": "^5.4.1",
         "ts-node": "^10.9.2",
         "tsup": "^8.4.0",
         "typescript": "^5.8.3",
         "vitest": "^3.2.4"
     },
     "dependencies": {
+        "chalk": "^5.4.1",
         "commander": "^13.1.0",
         "dotenv": "^16.5.0",
         "inquirer": "^12.5.2",

@@ -42,6 +42,21 @@ export default class NeonAdapter extends BaseAdapter {
      * Prompt for missing options
      */
     async promptForMissingOptions(): Promise<void> {
+        // Check if we're in a non-TTY environment (CI, automated scripts, etc.)
+        if (!process.stdin.isTTY) {
+            const missingVars: string[] = [];
+            if (!this.apiKey) missingVars.push("NEON_API_KEY");
+            if (!this.projectId) missingVars.push("NEON_PROJECT_ID");
+            
+            if (missingVars.length > 0) {
+                throw new Error(
+                    `Missing required environment variables in non-interactive environment: ${missingVars.join(", ")}. ` +
+                    `Please set these environment variables or run in an interactive terminal.`
+                );
+            }
+            return;
+        }
+
         const answers = await inquirer.prompt([
             {
                 type: "input",
