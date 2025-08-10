@@ -1,6 +1,7 @@
 import inquirer from "inquirer";
 import { getEnvValue } from "../../utils/config.ts";
 import { plainLog, successLog, warningLog } from "../../utils/log.ts";
+import { runMigrations } from "../../utils/migrations.ts";
 import { BaseAdapter } from "../base.ts";
 import type { Result } from "../types.ts";
 import type {
@@ -47,11 +48,11 @@ export default class NeonAdapter extends BaseAdapter {
             const missingVars: string[] = [];
             if (!this.apiKey) missingVars.push("NEON_API_KEY");
             if (!this.projectId) missingVars.push("NEON_PROJECT_ID");
-            
+
             if (missingVars.length > 0) {
                 throw new Error(
                     `Missing required environment variables in non-interactive environment: ${missingVars.join(", ")}. ` +
-                    `Please set these environment variables or run in an interactive terminal.`
+                        `Please set these environment variables or run in an interactive terminal.`,
                 );
             }
             return;
@@ -149,9 +150,19 @@ export default class NeonAdapter extends BaseAdapter {
      * Create migrations for the adapter
      */
     async createMigrations(connectionString: string, modules?: string[]): Promise<Result<void>> {
-        return {
-            success: true,
-        };
+        if (!modules || modules.length === 0) {
+            return { success: true };
+        }
+
+        try {
+            await runMigrations(connectionString, modules);
+            return { success: true };
+        } catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error : new Error("Migration failed"),
+            };
+        }
     }
 
     /**
@@ -167,8 +178,6 @@ export default class NeonAdapter extends BaseAdapter {
      * Get connection string for the branch
      */
     private async getConnectionString(branchId: string): Promise<Result<string>> {
-        warningLog("Getting database and role information");
-
         const dbResult = await this.fetchNeonAPI<{ databases: NeonAPIDatabase[] }>(
             `/projects/${this.projectId}/branches/${branchId}/databases`,
             {
@@ -212,7 +221,6 @@ export default class NeonAdapter extends BaseAdapter {
 
         const defaultRole = roleResult.data.roles[0]?.name;
 
-        warningLog("Getting connection string...");
         const connResult = await this.fetchNeonAPI<NeonAPIConnection>(
             `/projects/${this.projectId}/connection_uri?branch_id=${branchId}&database_name=${defaultDB}&role_name=${defaultRole}`,
             { method: "GET" },
@@ -344,8 +352,6 @@ export default class NeonAdapter extends BaseAdapter {
     private async checkExistingBranch(
         branchName: string,
     ): Promise<Result<NeonAPIBranchCheckResult>> {
-        warningLog("Checking for existing branches...");
-
         const result = await this.fetchNeonAPI<NeonAPIListBranchesResult>(
             `/projects/${this.projectId}/branches`,
             { method: "GET" },

@@ -8,9 +8,7 @@
     "bin": {
         "pgtrinity": "dist/cli.js"
     },
-    "files": [
-        "dist"
-    ],
+    "files": ["dist"],
     "scripts": {
         "build": "tsup src/cli.ts --format esm --dts --shims",
         "dev": "tsup src/cli.ts --format esm --watch",
