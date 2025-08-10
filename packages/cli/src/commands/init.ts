@@ -5,86 +5,86 @@ import { infoLog, successLog, warningLog } from "../utils/log.ts";
 import { BaseCommand, type CommandOptions } from "./base.ts";
 
 export class InitCommand extends BaseCommand {
-    static register(program: Command): void {
-        program
-            .command("init")
-            .description("Initialize PGTrinity configuration")
-            .option(
-                "-a, --adapter <adapter>",
-                `Database adapter to use (${SUPPORTED_ADAPTERS.join(", ")})`,
-                "neon",
-            )
-            .option("-f, --force", "Force recreation if resources exist")
-            .option(
-                "-m, --modules <modules>",
-                "Modules to initialize (cache,realtime,queue)",
-                "cache,realtime,queue",
-            )
-            .option("-c, --connection <string>", "PostgreSQL connection string")
-            .option("-k, --api-key <key>", "API Key (for neon)")
-            .option("-p, --project-id <id>", "Project ID (for neon)")
-            .option("-b, --branch-name <name>", "Branch name for PGTrinity (for neon)", "pgtrinity")
-            .action((options) =>
-                new InitCommand().run(options, "Initializing PGTrinity configuration..."),
-            );
+  static register(program: Command): void {
+    program
+      .command("init")
+      .description("Initialize PGTrinity configuration")
+      .option(
+        "-a, --adapter <adapter>",
+        `Database adapter to use (${SUPPORTED_ADAPTERS.join(", ")})`,
+        "neon",
+      )
+      .option("-f, --force", "Force recreation if resources exist")
+      .option(
+        "-m, --modules <modules>",
+        "Modules to initialize (cache,realtime,queue)",
+        "cache,realtime,queue",
+      )
+      .option("-c, --connection <string>", "PostgreSQL connection string")
+      .option("-k, --api-key <key>", "API Key (for neon)")
+      .option("-p, --project-id <id>", "Project ID (for neon)")
+      .option("-b, --branch-name <name>", "Branch name for PGTrinity (for neon)", "pgtrinity")
+      .action((options) =>
+        new InitCommand().run(options, "Initializing PGTrinity configuration..."),
+      );
+  }
+
+  protected async execute(options: CommandOptions): Promise<void> {
+    const adapter = createAdapter(options.adapter, options);
+    if (!adapter.validateOptions()) {
+      this.spinner?.stop();
+      await adapter.promptForMissingOptions();
+
+      // Re-validate after prompting for missing options
+      if (!adapter.validateOptions()) {
+        this.spinner.fail("Missing required configuration");
+        throw new Error("Required configuration is still missing after prompting");
+      }
+
+      this.spinner?.start("Creating resources...");
     }
 
-    protected async execute(options: CommandOptions): Promise<void> {
-        const adapter = createAdapter(options.adapter, options);
-        if (!adapter.validateOptions()) {
-            this.spinner?.stop();
-            await adapter.promptForMissingOptions();
+    this.spinner.text = `Creating resources using ${options.adapter} adapter...`;
+    const resourceResult = await adapter.createResources();
 
-            // Re-validate after prompting for missing options
-            if (!adapter.validateOptions()) {
-                this.spinner.fail("Missing required configuration");
-                throw new Error("Required configuration is still missing after prompting");
-            }
-
-            this.spinner?.start("Creating resources...");
-        }
-
-        this.spinner.text = `Creating resources using ${options.adapter} adapter...`;
-        const resourceResult = await adapter.createResources();
-
-        if (!resourceResult.success || !resourceResult.data) {
-            this.spinner.fail("Failed to create resources");
-            throw new Error(resourceResult.error?.message || "Failed to get connection string");
-        }
-
-        const connectionString = resourceResult.data;
-
-        this.spinner.text = "Running migrations...";
-        const modulesArray = options.modules
-            .split(",")
-            .map((m) => m.trim())
-            .filter(Boolean);
-
-        // Check if any modules were specified
-        if (modulesArray.length === 0) {
-            this.spinner.fail("No valid modules specified");
-            throw new Error(`Please specify at least one module: ${VALID_MODULES.join(", ")}`);
-        }
-
-        // Validate each module
-        for (const module of modulesArray) {
-            if (!VALID_MODULES.includes(module)) {
-                this.spinner.fail(`Invalid module "${module}"`);
-                throw new Error(`Allowed modules: ${VALID_MODULES.join(", ")}`);
-            }
-        }
-
-        const migrationResult = await adapter.createMigrations(connectionString, modulesArray);
-
-        if (!migrationResult.success) {
-            this.spinner.fail("Failed to run migrations");
-            throw new Error(migrationResult.error?.message);
-        }
-
-        this.spinner.succeed("PGTrinity configurated successfully");
-
-        successLog(`\nConnection string: ${connectionString}`);
-        infoLog(connectionString);
-        warningLog("\nAdd to your .env with the name PGTRINITY_CONNECTION_STRING");
+    if (!resourceResult.success || !resourceResult.data) {
+      this.spinner.fail("Failed to create resources");
+      throw new Error(resourceResult.error?.message || "Failed to get connection string");
     }
+
+    const connectionString = resourceResult.data;
+
+    this.spinner.text = "Running migrations...";
+    const modulesArray = options.modules
+      .split(",")
+      .map((m) => m.trim())
+      .filter(Boolean);
+
+    // Check if any modules were specified
+    if (modulesArray.length === 0) {
+      this.spinner.fail("No valid modules specified");
+      throw new Error(`Please specify at least one module: ${VALID_MODULES.join(", ")}`);
+    }
+
+    // Validate each module
+    for (const module of modulesArray) {
+      if (!VALID_MODULES.includes(module)) {
+        this.spinner.fail(`Invalid module "${module}"`);
+        throw new Error(`Allowed modules: ${VALID_MODULES.join(", ")}`);
+      }
+    }
+
+    const migrationResult = await adapter.createMigrations(connectionString, modulesArray);
+
+    if (!migrationResult.success) {
+      this.spinner.fail("Failed to run migrations");
+      throw new Error(migrationResult.error?.message);
+    }
+
+    this.spinner.succeed("PGTrinity configured successfully");
+
+    successLog(`\nConnection string: ${connectionString}`);
+    infoLog(connectionString);
+    warningLog("\nAdd to your .env with the name PGTRINITY_CONNECTION_STRING");
+  }
 }
