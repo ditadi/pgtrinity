@@ -42,9 +42,73 @@ While PGTrinity works with any PostgreSQL installation, it offers special integr
 - **Serverless**: Scale to zero when not in use to reduce costs
 - **Edge Optimized**: Low-latency performance with serverless drivers
 
+## Getting Started
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/ditadi/pgtrinity.git
+cd pgtrinity
+
+# Install dependencies
+pnpm install
+
+# Build the CLI
+pnpm build
+```
+
+### Configuration
+
+1. Copy the environment example file:
+```bash
+cp .env.example .env
+```
+
+2. Add your Neon credentials to `.env`:
+```
+NEON_API_KEY=your_api_key_here
+NEON_PROJECT_ID=your_project_id_here
+```
+
+You can get these values from [Neon Console](https://console.neon.tech).
+
+### Initialize PGTrinity
+
+Run the CLI to set up your database:
+
+```bash
+node packages/cli/dist/cli.js init --adapter neon
+```
+
+Options:
+- `--adapter <adapter>`: Database adapter to use (currently only "neon")
+- `--branch-name <name>`: Custom branch name (default: "pgtrinity")
+- `--force`: Recreate branch if it already exists
+- `--modules <modules>`: Modules to initialize (default: "cache,realtime,queue")
+
+The command will:
+1. Create a dedicated branch in your Neon project
+2. Generate a connection string
+3. Display the connection string to add to your `.env` file
+
+## Development
+
+```bash
+# Run CLI in development mode
+cd packages/cli && pnpm dev
+
+# Run linting and formatting
+pnpm lint
+pnpm format
+
+# Type checking
+cd packages/cli && pnpm lint
+```
+
 ## Status
 
-This project is currently under active development. Contributions are welcome!
+This project is currently under active development. The CLI infrastructure and Neon adapter are functional, but the core library modules (cache, realtime, queue) are not yet implemented. Contributions are welcome!
 
 ## License
 
