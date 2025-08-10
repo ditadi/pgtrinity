@@ -8,22 +8,29 @@
     "bin": {
         "pgtrinity": "dist/cli.js"
     },
-    "files": ["dist"],
+    "files": [
+        "dist"
+    ],
     "scripts": {
         "build": "tsup src/cli.ts --format esm --dts --shims",
         "dev": "tsup src/cli.ts --format esm --watch",
         "lint": "tsc --noEmit",
-        "clean": "rm -rf dist"
+        "clean": "rm -rf dist",
+        "test": "vitest",
+        "test:run": "vitest run",
+        "test:watch": "vitest watch"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "devDependencies": {
         "@types/node": "^22.14.1",
+        "@vitest/ui": "^3.2.4",
         "chalk": "^5.4.1",
         "ts-node": "^10.9.2",
         "tsup": "^8.4.0",
-        "typescript": "^5.8.3"
+        "typescript": "^5.8.3",
+        "vitest": "^3.2.4"
     },
     "dependencies": {
         "commander": "^13.1.0",
