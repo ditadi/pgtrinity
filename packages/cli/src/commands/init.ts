@@ -18,10 +18,10 @@ export class InitCommand extends BaseCommand {
       .option("-f, --force", "Force recreation if resources exist")
       .option(
         "-m, --modules <modules>",
-        "Modules to initialize (cache,realtime,queue)",
-        "cache,realtime,queue",
+        `Modules to initialize (${VALID_MODULES.join(",")})`,
+        VALID_MODULES.join(","),
       )
-      .option("-c, --connection <string>", "PostgreSQL connection string")
+      .option("-c, --connection-string <string>", "PostgreSQL connection string")
       .option("-k, --api-key <key>", "API Key (for neon)")
       .option("-p, --project-id <id>", "Project ID (for neon)")
       .option("-b, --branch-name <name>", "Branch name for PGTrinity (for neon)", "pgtrinity")
@@ -31,29 +31,38 @@ export class InitCommand extends BaseCommand {
   }
 
   protected async execute(options: CommandOptions): Promise<void> {
+    let connectionString: string;
     const adapter = createAdapter(options.adapter, options);
-    if (!adapter.validateOptions()) {
-      this.spinner?.stop();
-      await adapter.promptForMissingOptions();
 
-      // Re-validate after prompting for missing options
+    // Check if connection string is provided via CLI options
+    if (options.connectionString) {
+      this.spinner.text = "Using provided connection string...";
+      connectionString = options.connectionString;
+    } else {
+      // Create resources using adapter
       if (!adapter.validateOptions()) {
-        this.spinner.fail("Missing required configuration");
-        throw new Error("Required configuration is still missing after prompting");
+        this.spinner?.stop();
+        await adapter.promptForMissingOptions();
+
+        // Re-validate after prompting for missing options
+        if (!adapter.validateOptions()) {
+          this.spinner.fail("Missing required configuration");
+          throw new Error("Required configuration is still missing after prompting");
+        }
+
+        this.spinner?.start("Creating resources...");
       }
 
-      this.spinner?.start("Creating resources...");
+      this.spinner.text = `Creating resources using ${options.adapter} adapter...`;
+      const resourceResult = await adapter.createResources();
+
+      if (!resourceResult.success || !resourceResult.data) {
+        this.spinner.fail("Failed to create resources");
+        throw new Error(resourceResult.error?.message || "Failed to get connection string");
+      }
+
+      connectionString = resourceResult.data;
     }
-
-    this.spinner.text = `Creating resources using ${options.adapter} adapter...`;
-    const resourceResult = await adapter.createResources();
-
-    if (!resourceResult.success || !resourceResult.data) {
-      this.spinner.fail("Failed to create resources");
-      throw new Error(resourceResult.error?.message || "Failed to get connection string");
-    }
-
-    const connectionString = resourceResult.data;
 
     this.spinner.text = "Running migrations...";
     

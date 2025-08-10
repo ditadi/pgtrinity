@@ -59,7 +59,7 @@ export default class NeonAdapter extends BaseAdapter {
 
         const answers = await inquirer.prompt([
             {
-                type: "input",
+                type: "password",
                 name: "apiKey",
                 message: "Enter your Neon API Key:",
                 when: !this.apiKey,
