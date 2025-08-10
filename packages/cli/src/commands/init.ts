@@ -1,6 +1,6 @@
 import type { Command } from "commander";
 import { createAdapter } from "../adapters/index.ts";
-import { SUPPORTED_ADAPTERS } from "../cli.ts";
+import { SUPPORTED_ADAPTERS, VALID_MODULES } from "../cli.ts";
 import { infoLog, successLog, warningLog } from "../utils/log.ts";
 import { BaseCommand, type CommandOptions } from "./base.ts";
 
@@ -34,19 +34,46 @@ export class InitCommand extends BaseCommand {
         if (!adapter.validateOptions()) {
             this.spinner?.stop();
             await adapter.promptForMissingOptions();
+
+            // Re-validate after prompting for missing options
+            if (!adapter.validateOptions()) {
+                this.spinner.fail("Missing required configuration");
+                throw new Error("Required configuration is still missing after prompting");
+            }
+
             this.spinner?.start("Creating resources...");
         }
 
         this.spinner.text = `Creating resources using ${options.adapter} adapter...`;
-        const connectionString = await adapter.createResources();
+        const resourceResult = await adapter.createResources();
 
-        if (!connectionString) {
-            this.spinner.fail("Failed to get connection string");
-            return;
+        if (!resourceResult.success || !resourceResult.data) {
+            this.spinner.fail("Failed to create resources");
+            throw new Error(resourceResult.error?.message || "Failed to get connection string");
         }
 
+        const connectionString = resourceResult.data;
+
         this.spinner.text = "Running migrations...";
-        const modulesArray = options.modules.split(",");
+        const modulesArray = options.modules
+            .split(",")
+            .map((m) => m.trim())
+            .filter(Boolean);
+
+        // Check if any modules were specified
+        if (modulesArray.length === 0) {
+            this.spinner.fail("No valid modules specified");
+            throw new Error(`Please specify at least one module: ${VALID_MODULES.join(", ")}`);
+        }
+
+        // Validate each module
+        for (const module of modulesArray) {
+            if (!VALID_MODULES.includes(module)) {
+                this.spinner.fail(`Invalid module "${module}"`);
+                throw new Error(`Allowed modules: ${VALID_MODULES.join(", ")}`);
+            }
+        }
+
         const migrationResult = await adapter.createMigrations(connectionString, modulesArray);
 
         if (!migrationResult.success) {

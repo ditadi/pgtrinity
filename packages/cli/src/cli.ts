@@ -14,4 +14,9 @@ program.name("pgtrinity").description("CLI for PGTrinity configuration").version
 
 InitCommand.register(program);
 
-program.parse();
+try {
+    await program.parseAsync();
+} catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+}

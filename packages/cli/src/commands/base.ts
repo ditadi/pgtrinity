@@ -34,10 +34,9 @@ export abstract class BaseCommand {
         try {
             if (!validateAdapter(options.adapter, SUPPORTED_ADAPTERS, this.spinner)) {
                 this.spinner.fail("Invalid adapter");
-                errorLog(
-                    `\nError: Invalid adapter "${options.adapter}". Supported adapters are: ${SUPPORTED_ADAPTERS.join(", ")}`,
+                throw new Error(
+                    `Invalid adapter "${options.adapter}". Supported adapters are: ${SUPPORTED_ADAPTERS.join(", ")}`,
                 );
-                process.exit(1);
             }
 
             const { valid, modules } = validateModules(
@@ -47,17 +46,16 @@ export abstract class BaseCommand {
             );
             if (!valid) {
                 this.spinner.fail("Invalid modules");
-                errorLog(
-                    `\nError: Invalid modules "${options.modules}". Supported modules are: ${VALID_MODULES.join(", ")}`,
+                throw new Error(
+                    `Invalid modules "${options.modules}". Supported modules are: ${VALID_MODULES.join(", ")}`,
                 );
-                process.exit(1);
             }
 
             await this.execute({ ...options, modules: modules.join(",") });
         } catch (error) {
             this.spinner.fail("Failed to execute command");
             errorLog(`\nError: ${error instanceof Error ? error.message : String(error)}`);
-            process.exit(1);
+            throw error;
         }
     }
 }

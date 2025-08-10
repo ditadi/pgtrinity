@@ -9,7 +9,7 @@ export abstract class BaseAdapter {
 
     abstract validateOptions(): boolean;
     abstract promptForMissingOptions(): Promise<void>;
-    abstract createResources(): Promise<string>;
+    abstract createResources(): Promise<Result<string>>;
     abstract createMigrations(connectionString: string, modules: string[]): Promise<Result>;
     abstract checkResources(connectionString: string): Promise<Result>;
 }

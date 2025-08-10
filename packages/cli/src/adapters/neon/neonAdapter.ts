@@ -70,11 +70,24 @@ export default class NeonAdapter extends BaseAdapter {
     /**
      * Create resources for the adapter
      */
-    async createResources(): Promise<string> {
+    async createResources(): Promise<Result<string>> {
+        // Validate options before making API calls
+        if (!this.validateOptions()) {
+            return {
+                success: false,
+                error: new Error(
+                    "Missing required configuration: API key and project ID are required",
+                ),
+            };
+        }
+
         const branchResult = await this.checkExistingBranch(this.branchName);
 
         if (!branchResult.success || !branchResult.data) {
-            throw new Error(`Failed to check existing branch: ${branchResult.error}`);
+            return {
+                success: false,
+                error: branchResult.error || new Error("Failed to check existing branch"),
+            };
         }
 
         const { existingBranch, primaryBranchId } = branchResult.data;
@@ -83,7 +96,10 @@ export default class NeonAdapter extends BaseAdapter {
         if (existingBranch) {
             const handleResult = await this.handleExistingBranch(existingBranch);
             if (!handleResult.success) {
-                throw handleResult.error || new Error("Failed to handle existing branch");
+                return {
+                    success: false,
+                    error: handleResult.error || new Error("Failed to handle existing branch"),
+                };
             }
             branchId = handleResult.data;
         }
@@ -91,7 +107,10 @@ export default class NeonAdapter extends BaseAdapter {
         if (!branchId) {
             const createResult = await this.createBranch(this.branchName, primaryBranchId);
             if (!createResult.success || !createResult.data) {
-                throw createResult.error || new Error("Failed to create branch");
+                return {
+                    success: false,
+                    error: createResult.error || new Error("Failed to create branch"),
+                };
             }
             branchId = createResult.data;
         }
@@ -99,10 +118,16 @@ export default class NeonAdapter extends BaseAdapter {
         const connResult = await this.getConnectionString(branchId);
 
         if (!connResult.success || !connResult.data) {
-            throw connResult.error || new Error("Failed to get connection string");
+            return {
+                success: false,
+                error: connResult.error || new Error("Failed to get connection string"),
+            };
         }
 
-        return connResult.data;
+        return {
+            success: true,
+            data: connResult.data,
+        };
     }
 
     /**
