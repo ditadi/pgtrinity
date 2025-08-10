@@ -35,6 +35,9 @@ importers:
 
   packages/cli:
     dependencies:
+      chalk:
+        specifier: ^5.4.1
+        version: 5.4.1
       commander:
         specifier: ^13.1.0
         version: 13.1.0
@@ -57,9 +60,6 @@ importers:
       '@vitest/ui':
         specifier: ^3.2.4
         version: 3.2.4(vitest@3.2.4)
-      chalk:
-        specifier: ^5.4.1
-        version: 5.4.1
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@22.14.1)(typescript@5.8.3)
